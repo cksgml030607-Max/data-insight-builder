@@ -278,6 +278,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================================
   // 2-B. 자연어 질의 결과 시각화 버튼 (차트 및 Step 3/4 전환)
   // ==========================================================================
+  // 2-B. 자연어 질의 결과 시각화 버튼 (차트 및 Step 3/4 전환)
+  // ==========================================================================
   if (btnVisualizeQuery) {
     btnVisualizeQuery.addEventListener("click", () => {
       if (!lastQueryResult || !lastQueryResult.result) {
@@ -292,28 +294,33 @@ document.addEventListener("DOMContentLoaded", () => {
       const d = lastQueryResult.result;
       const toolNameKo = lastQueryResult.tool_name_ko || lastQueryResult.tool;
 
-      // Step 3 메타데이터 채우기
+      // 1. 먼저 Step 3 및 Step 4 영역을 화면에 표시 (Canvas 크기 정상 계산용)
+      sectionRun.classList.remove("hidden");
+      sectionExplain.classList.remove("hidden");
+
+      // 2. Step 3 메타데이터 채우기
       metaToolName.textContent = `${toolNameKo} (${lastQueryResult.tool})`;
-      metaRefPeriod.textContent = d.reference_period || lastQueryResult.params.reference_period || "기준 시점";
+      metaRefPeriod.textContent = d.reference_period || (lastQueryResult.params && lastQueryResult.params.reference_period) || "기준 시점";
       metaRowsUsed.textContent = `${(d.rows_used || 0).toLocaleString()}개 항목 (정상 계산)`;
       metaRowsExcluded.textContent = `${d.rows_excluded || 0}개 항목 (${d.exclusion_reason || "미해당"})`;
 
-      // Chart.js 렌더링
-      if (d.chart_data) {
-        renderChart(d.chart_data, lastQueryResult.unit);
+      // 3. 차트 데이터 추출 (d.result.chart_data 또는 d.chart_data)
+      const chartData = (d.result && d.result.chart_data) ? d.result.chart_data : d.chart_data;
+
+      // 4. Chart.js 렌더링
+      if (chartData) {
+        renderChart(chartData, lastQueryResult.unit || d.unit);
       } else {
         destroyChart();
       }
 
-      // 수치 요약 테이블 렌더링
+      // 5. 수치 요약 테이블 렌더링
       renderResultSummary(d);
 
-      // Step 3 및 Step 4 활성화
-      sectionRun.classList.remove("hidden");
-      sectionExplain.classList.remove("hidden");
-
-      // Step 3으로 부드럽게 스크롤
-      sectionRun.scrollIntoView({ behavior: "smooth" });
+      // 6. Step 3으로 부드럽게 스크롤
+      setTimeout(() => {
+        sectionRun.scrollIntoView({ behavior: "smooth" });
+      }, 50);
     });
   }
 

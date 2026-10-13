@@ -452,9 +452,13 @@ body {
 .chart-container {
   position: relative;
   width: 100%;
-  min-height: 320px;
-  max-height: 420px;
+  height: 380px;
   margin-bottom: 1.5rem;
+}
+
+#insightChart {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* Step 4: Mode Tabs */

@@ -687,9 +687,20 @@ def query_natural_language():
         tool_meta = catalog_map[tool_name]
         func = getattr(tools, tool_name)
 
-        # 도구 실행에 필요한 인수 추출
+        # 도구 실행에 필요한 인수 추출 및 별칭(alias) 정규화
         sig = inspect.signature(func)
         accepted_params = set(sig.parameters.keys())
+        
+        # 파라미터 키 별칭 매핑
+        if "target_item" in accepted_params and "target_item" not in params:
+            if "target_country" in params: params["target_item"] = params["target_country"]
+            elif "country" in params: params["target_item"] = params["country"]
+            elif "item" in params: params["target_item"] = params["item"]
+        if "mode" in accepted_params and "mode" not in params:
+            if "order" in params: params["mode"] = params["order"]
+        if "items" in accepted_params and "items" not in params:
+            if "countries" in params: params["items"] = params["countries"]
+
         clean_kwargs = {k: v for k, v in params.items() if k in accepted_params}
         if "reference_period" in accepted_params and "reference_period" not in clean_kwargs:
             clean_kwargs["reference_period"] = recommended_year
