@@ -567,15 +567,56 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     } else {
       // 일반 막대 차트 (단일 데이터셋)
+      // 1) 막대별 개별 무지개 선형 그라데이션 (각 막대 내부 왼쪽->오른쪽)
+      // 2) 전체 순위 1위->N위: 무지개 색조 순환 (Hue 10°~310°)
+      // 3) 순위별 채도 그라데이션: 상위권은 진하고 선명한 채도(92%), 하위권으로 갈수록 부드럽고 옅은 파스텔톤(48%)으로 유지
+      const totalLabels = (chartData.labels || []).length;
       const highlightIdx = chartData.highlight_index !== undefined ? chartData.highlight_index : -1;
-      
-      // 순위별 그라디언트 톤 적용 (선택 강조는 퍼플, 상위권은 진한 블루에서 점차 밝은 톤으로)
-      const bgColors = (chartData.labels || []).map((_, i) => {
-        if (i === highlightIdx) return "#7c3aed"; // 사용자 선택 국가 하이라이트
-        if (i === 0) return "#1d4ed8"; // 1위 진한 블루
-        if (i === 1) return "#2563eb"; // 2위
-        if (i === 2) return "#3b82f6"; // 3위
-        return "#60a5fa"; // 일반 블루
+
+      const bgGradients = (chartData.labels || []).map((_, i) => {
+        if (i === highlightIdx) {
+          // 사용자 선택 강조 항목 (고급스러운 인디고-바이올렛 그라데이션)
+          const g = isHorizontal
+            ? ctx.createLinearGradient(0, 0, 700, 0)
+            : ctx.createLinearGradient(0, 0, 0, 420);
+          g.addColorStop(0, "rgba(124, 58, 237, 1)");
+          g.addColorStop(1, "rgba(99, 102, 241, 0.85)");
+          return g;
+        }
+
+        // 전체 순위에 따른 진행도 (0.0 ~ 1.0)
+        const progress = totalLabels > 1 ? i / (totalLabels - 1) : 0;
+
+        // [무지개 색조]: 빨강(10°) -> 주황(35°) -> 골드(50°) -> 에메랄드(145°) -> 틸(185°) -> 오션블루(220°) -> 퍼플(275°) -> 로즈(320°)
+        const hue = Math.round((progress * 300 + 10) % 360);
+
+        // [순위별 채도 그라데이션]: 1위 92% (가장 진함) -> 30위 48% (옅고 부드러움)
+        const satStart = Math.round(92 - progress * 44);
+        const satEnd = Math.max(28, satStart - 18);
+
+        // [순위별 명도]: 1위 48% (또렷함) -> 30위 68% (밝고 투명감 있음)
+        const lightStart = Math.round(48 + progress * 20);
+        const lightEnd = Math.min(84, lightStart + 12);
+
+        // 막대 내부의 선형 그라데이션 (시작: 진한 색 -> 끝: 부드럽고 옅은 색)
+        const grad = isHorizontal
+          ? ctx.createLinearGradient(0, 0, 750, 0)
+          : ctx.createLinearGradient(0, 0, 0, 420);
+
+        grad.addColorStop(0, `hsla(${hue}, ${satStart}%, ${lightStart}%, 0.95)`);
+        grad.addColorStop(1, `hsla(${hue}, ${satEnd}%, ${lightEnd}%, 0.78)`);
+
+        return grad;
+      });
+
+      // 테두리 색상도 조화롭게 무지개 톤으로 매칭
+      const borderColors = (chartData.labels || []).map((_, i) => {
+        if (i === highlightIdx) return "rgba(109, 40, 217, 1)";
+        const progress = totalLabels > 1 ? i / (totalLabels - 1) : 0;
+        const hue = Math.round((progress * 300 + 10) % 360);
+        const sat = Math.round(85 - progress * 35);
+        const light = Math.round(40 + progress * 15);
+        return `hsla(${hue}, ${sat}%, ${light}%, 0.9)`;
       });
 
       chartConfig.data = {
@@ -583,7 +624,9 @@ document.addEventListener("DOMContentLoaded", () => {
         datasets: [{
           label: "지표 수치",
           data: chartData.values || [],
-          backgroundColor: bgColors,
+          backgroundColor: bgGradients,
+          borderColor: borderColors,
+          borderWidth: 1,
           borderRadius: 6,
           borderSkipped: false,
           barThickness: isHorizontal ? (labelCount > 20 ? 18 : 22) : undefined,
