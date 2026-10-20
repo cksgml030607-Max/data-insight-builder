@@ -646,7 +646,7 @@ def query_natural_language():
 
 [도구 매핑 원칙]
 1. 특정 국가의 순위나 특정 국가와 전체 비교를 묻는 경우: compare_one_vs_all (target_country: World Bank 영문명, reference_period: "{recommended_year}")
-2. 상위/하위 N개국, 최고/최저 국가를 묻는 경우: top_bottom_n (n: 5 또는 10, order: "top" 또는 "bottom", reference_period: "{recommended_year}")
+2. 상위/하위 N개국, 최고/최저 국가를 묻는 경우: top_bottom_n (n: 사용자가 질문에서 명시한 정수 숫자(예: 30개국이면 n: 30, 20개국이면 n: 20, 명시하지 않은 경우 10), order: "top" 또는 "bottom", reference_period: "{recommended_year}")
 3. 연도별 변화 추이, 시간에 따른 변화, 특정 국가들의 추세를 묻는 경우: trend_line (countries: ["Korea, Rep.", ...] 또는 빈 배열)
 4. 전 세계 평균, 중앙값, 최빈값, 분포를 묻는 경우: distribution 또는 describe_numeric (reference_period: "{recommended_year}")
 5. 대륙별/소득수준별 차이를 묻는 경우: group_summary (reference_period: "{recommended_year}")

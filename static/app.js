@@ -52,6 +52,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const metaRowsUsed = document.getElementById("metaRowsUsed");
   const metaRowsExcluded = document.getElementById("metaRowsExcluded");
   const calcResultDisplay = document.getElementById("calcResultDisplay");
+  const chartItemCountBadge = document.getElementById("chartItemCountBadge");
+  const chartUnitBadge = document.getElementById("chartUnitBadge");
+  const chartWrapper = document.getElementById("chartWrapper");
+  const chartScrollWrapper = document.getElementById("chartScrollWrapper");
 
   const sectionExplain = document.getElementById("sectionExplain");
   const tabModeB = document.getElementById("tabModeB");
@@ -462,6 +466,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const ctx = document.getElementById("insightChart").getContext("2d");
     const chartType = chartData.type || "bar";
     const isHorizontal = !!chartData.horizontal;
+    const labelCount = (chartData.labels || []).length;
+
+    // 상단 뱃지 갱신
+    if (chartItemCountBadge) {
+      chartItemCountBadge.textContent = labelCount > 0 ? `총 ${labelCount}개 항목 표시` : "데이터 없음";
+    }
+    if (chartUnitBadge) {
+      chartUnitBadge.textContent = `단위: ${unit || "%"}`;
+    }
+
+    // 가로 막대 그래프인 경우 데이터 개수에 비례하여 캔버스 높이를 동적으로 확장 (가시성 극대화)
+    if (chartWrapper) {
+      if (isHorizontal) {
+        // 항목당 최소 30px의 높이 확보 (30개 항목이면 약 980px 확보)
+        const dynamicHeight = Math.max(380, labelCount * 30 + 80);
+        chartWrapper.style.height = `${dynamicHeight}px`;
+      } else {
+        chartWrapper.style.height = "420px";
+      }
+    }
 
     let chartConfig = {
       type: chartType,
@@ -469,22 +493,56 @@ document.addEventListener("DOMContentLoaded", () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+          padding: { top: 15, right: 25, bottom: 15, left: 10 }
+        },
         plugins: {
           legend: {
-            display: chartType === "line" || chartType === "scatter"
+            display: chartType === "line" || chartType === "scatter",
+            position: "top",
+            labels: {
+              boxWidth: 12,
+              font: { family: "Pretendard, system-ui, sans-serif", size: 12, weight: 600 }
+            }
           },
           tooltip: {
+            backgroundColor: "rgba(15, 23, 42, 0.9)",
+            padding: 10,
+            titleFont: { size: 13, weight: 700 },
+            bodyFont: { size: 12 },
+            cornerRadius: 8,
             callbacks: {
               label: (context) => {
-                const val = context.parsed.y !== undefined ? context.parsed.y : context.parsed.x;
-                return `${context.dataset.label || "값"}: ${val} ${unit || ""}`;
+                const val = context.parsed.y !== undefined && !isHorizontal ? context.parsed.y : context.parsed.x;
+                const displayVal = val !== undefined ? val : context.raw;
+                return ` ${context.dataset.label || "값"}: ${displayVal} ${unit || ""}`;
               }
             }
           }
         },
         scales: {
-          x: { grid: { color: "#f1f5f9" } },
-          y: { grid: { color: "#f1f5f9" } }
+          x: {
+            grid: { color: "#f1f5f9" },
+            ticks: {
+              autoSkip: !isHorizontal, // 가로 막대일 때는 수치 축이므로 autoSkip 허용
+              font: { family: "Pretendard, system-ui, sans-serif", size: 11, weight: 500 },
+              color: "#64748b"
+            }
+          },
+          y: {
+            grid: { color: "#f8fafc" },
+            ticks: {
+              // 중요: 가로 막대일 때 Y축 레이블(국가명)이 절대 건너뛰어지지 않도록 autoSkip을 false로 강제!
+              autoSkip: isHorizontal ? false : true,
+              font: {
+                family: "Pretendard, system-ui, sans-serif",
+                size: isHorizontal && labelCount > 20 ? 11 : 12,
+                weight: 600
+              },
+              color: "#1e293b",
+              padding: 8
+            }
+          }
         }
       }
     };
@@ -496,22 +554,29 @@ document.addEventListener("DOMContentLoaded", () => {
     if (chartType === "line" || chartType === "scatter") {
       chartConfig.data = {
         labels: chartData.labels || [],
-        datasets: chartData.datasets.map((ds, idx) => ({
+        datasets: (chartData.datasets || []).map((ds, idx) => ({
           label: ds.label,
           data: ds.data,
-          borderColor: ["#2563eb", "#7c3aed", "#059669", "#d97706", "#dc2626"][idx % 5],
-          backgroundColor: ["#2563eb", "#7c3aed", "#059669", "#d97706", "#dc2626"][idx % 5],
-          tension: 0.2,
-          borderWidth: 2,
-          pointRadius: 3
+          borderColor: ["#2563eb", "#7c3aed", "#059669", "#d97706", "#dc2626", "#0284c7"][idx % 6],
+          backgroundColor: ["#2563eb", "#7c3aed", "#059669", "#d97706", "#dc2626", "#0284c7"][idx % 6],
+          tension: 0.25,
+          borderWidth: 2.5,
+          pointRadius: 4,
+          pointHoverRadius: 6
         }))
       };
     } else {
       // 일반 막대 차트 (단일 데이터셋)
       const highlightIdx = chartData.highlight_index !== undefined ? chartData.highlight_index : -1;
-      const bgColors = (chartData.labels || []).map((_, i) =>
-        i === highlightIdx ? "#7c3aed" : "#3b82f6"
-      );
+      
+      // 순위별 그라디언트 톤 적용 (선택 강조는 퍼플, 상위권은 진한 블루에서 점차 밝은 톤으로)
+      const bgColors = (chartData.labels || []).map((_, i) => {
+        if (i === highlightIdx) return "#7c3aed"; // 사용자 선택 국가 하이라이트
+        if (i === 0) return "#1d4ed8"; // 1위 진한 블루
+        if (i === 1) return "#2563eb"; // 2위
+        if (i === 2) return "#3b82f6"; // 3위
+        return "#60a5fa"; // 일반 블루
+      });
 
       chartConfig.data = {
         labels: chartData.labels || [],
@@ -519,13 +584,16 @@ document.addEventListener("DOMContentLoaded", () => {
           label: "지표 수치",
           data: chartData.values || [],
           backgroundColor: bgColors,
-          borderRadius: 4
+          borderRadius: 6,
+          borderSkipped: false,
+          barThickness: isHorizontal ? (labelCount > 20 ? 18 : 22) : undefined,
+          maxBarThickness: 32
         }]
       };
     }
 
     currentChart = new Chart(ctx, chartConfig);
-    console.log("[CHART] 차트 렌더 완료", { type: chartType });
+    console.log("[CHART] 차트 렌더 완료", { type: chartType, count: labelCount });
   }
 
   function renderResultSummary(data) {
@@ -533,19 +601,86 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!r) return;
 
     let html = "";
+
+    // 1. 순위 데이터 (top_records 또는 bottom_records) - 명확한 랭킹 테이블 렌더링
+    const records = r.top_records || r.bottom_records;
+    if (records && Array.isArray(records) && records.length > 0) {
+      const modeTitle = r.mode === "bottom" ? "하위 순위 목록" : "상위 순위 목록";
+      html += `
+        <div class="ranking-table-container" style="margin-top: 0.5rem;">
+          <div class="ranking-table-wrapper">
+            <table class="ranking-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px; text-align: center;">순위</th>
+                  <th>항목 / 국가명</th>
+                  <th style="text-align: right; width: 150px;">지표 수치 (${data.unit || "%"})</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${records.map((rec) => {
+                  let badgeClass = "rank-badge";
+                  if (rec.rank === 1) badgeClass += " rank-1";
+                  else if (rec.rank === 2) badgeClass += " rank-2";
+                  else if (rec.rank === 3) badgeClass += " rank-3";
+                  return `
+                    <tr>
+                      <td style="text-align: center;"><span class="${badgeClass}">${rec.rank}</span></td>
+                      <td><strong>${rec.label}</strong></td>
+                      <td style="text-align: right;" class="rank-val">${rec.value !== null ? rec.value : "-"}</td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    // 2. 특정 1개 항목 vs 전체 비교 (compare_one_vs_all)
+    if (r.target_item) {
+      html += `
+        <div class="metric-grid" style="margin-top: 0.5rem;">
+          <div class="metric-card highlight">
+            <span class="label">${r.target_item} 수치 / 순위</span>
+            <span class="val">${r.target_value}${data.unit || "%"} (전체 ${r.total_count}개국 중 ${r.rank}위)</span>
+          </div>
+          <div class="metric-card">
+            <span class="label">전체 백분위</span>
+            <span class="val">상위 ${r.percentile}%</span>
+          </div>
+          <div class="metric-card">
+            <span class="label">전체 중앙값 대비 격차</span>
+            <span class="val" style="color:${r.diff_from_median >= 0 ? '#16a34a' : '#dc2626'};">
+              ${r.diff_from_median >= 0 ? '+' : ''}${r.diff_from_median}%p
+            </span>
+          </div>
+          <div class="metric-card">
+            <span class="label">전체 평균 대비 격차</span>
+            <span class="val" style="color:${r.diff_from_mean >= 0 ? '#16a34a' : '#dc2626'};">
+              ${r.diff_from_mean >= 0 ? '+' : ''}${r.diff_from_mean}%p
+            </span>
+          </div>
+        </div>
+      `;
+    }
+
+    // 3. 통계 요약 (statistics)
     if (r.statistics) {
-      html += `<div class="metric-grid" style="margin-top:1rem;">
+      html += `<div class="metric-grid" style="margin-top: 0.5rem;">
         <div class="metric-card"><span class="label">평균(Mean)</span><span class="val">${r.statistics.mean}</span></div>
         <div class="metric-card highlight"><span class="label">중앙값(Median)</span><span class="val">${r.statistics.median}</span></div>
-        <div class="metric-card"><span class="label">최솟값 / 최댓값</span><span class="val">${r.statistics.min} ~ ${r.statistics.max}</span></div>
+        <div class="metric-card"><span class="label">최솟값 ~ 최댓값</span><span class="val">${r.statistics.min} ~ ${r.statistics.max}</span></div>
         <div class="metric-card"><span class="label">표준편차(Std)</span><span class="val">${r.statistics.std}</span></div>
       </div>`;
     } else if (r.correlation_coefficient !== undefined) {
-      html += `<div class="alert-banner info" style="margin-top:1rem;">
+      html += `<div class="alert-banner info" style="margin-top: 0.5rem;">
         <strong>피어슨 상관계수 (r):</strong> ${r.correlation_coefficient}
-        <br><small>${data.cautions}</small>
+        <br><small>${data.cautions || ""}</small>
       </div>`;
     }
+
     calcResultDisplay.innerHTML = html;
   }
 

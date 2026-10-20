@@ -195,37 +195,61 @@
       </div>
       <div class="card-body">
         <!-- 실행 메타데이터 박스 -->
+        <div class="meta-section-header">
+          <span class="meta-section-tag">📋 실행 메타데이터</span>
+          <span class="meta-section-sub">엄격한 데이터 정합성 검증 결과</span>
+        </div>
         <div id="runMetaBox" class="run-meta-box">
           <div class="meta-item">
-            <span class="label">실행 도구:</span>
+            <span class="label">실행 도구</span>
             <strong id="metaToolName">-</strong>
           </div>
           <div class="meta-item">
-            <span class="label">기준 시점:</span>
+            <span class="label">기준 시점</span>
             <strong id="metaRefPeriod">-</strong>
           </div>
           <div class="meta-item">
-            <span class="label">사용한 행 수:</span>
+            <span class="label">계산에 사용된 유효 행 수</span>
             <strong id="metaRowsUsed" class="text-success">-</strong>
           </div>
           <div class="meta-item">
-            <span class="label">제외한 행 수 및 이유:</span>
+            <span class="label">제외된 행 수 및 사유</span>
             <strong id="metaRowsExcluded" class="text-warning">-</strong>
           </div>
         </div>
 
         <div id="runLoading" class="loading-spinner hidden">
           <div class="spinner"></div>
-          <p>Pandas가 수치를 계산하고 차트 데이터를 구성 중입니다...</p>
+          <p>Pandas가 수치를 계산하고 시각화 차트를 구성 중입니다...</p>
         </div>
 
-        <!-- Chart.js 캔버스 -->
-        <div class="chart-container" id="chartWrapper">
-          <canvas id="insightChart"></canvas>
+        <!-- Chart.js 캔버스 영역 (독립된 세련된 카드 & 스크롤 지원) -->
+        <div class="chart-outer-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title">
+              <span class="chart-icon">📊</span>
+              <strong>데이터 시각화 그래프</strong>
+              <span class="chart-items-badge" id="chartItemCountBadge">-</span>
+            </div>
+            <div class="chart-card-meta">
+              <span class="unit-badge" id="chartUnitBadge">단위: %</span>
+            </div>
+          </div>
+          
+          <div class="chart-scroll-wrapper" id="chartScrollWrapper">
+            <div class="chart-container" id="chartWrapper">
+              <canvas id="insightChart"></canvas>
+            </div>
+          </div>
         </div>
 
-        <!-- 수치 결과 테이블 -->
-        <div id="calcResultDisplay" class="calc-result-display"></div>
+        <!-- 수치 결과 상세 테이블 및 메트릭 박스 -->
+        <div class="result-details-section">
+          <div class="result-details-header">
+            <span class="result-details-tag">🔢 세부 연산 데이터 요약</span>
+          </div>
+          <div id="calcResultDisplay" class="calc-result-display"></div>
+        </div>
       </div>
     </section>
 

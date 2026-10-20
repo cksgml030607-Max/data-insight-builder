@@ -422,43 +422,234 @@ body {
 }
 
 /* Step 3: Run Meta Box */
+.meta-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.meta-section-tag {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #3b82f6;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+}
+
+.meta-section-sub {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
 .run-meta-box {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.75rem;
+  gap: 0.85rem;
   background: #f8fafc;
-  border: 1px solid var(--border-color);
+  border: 1px solid #e2e8f0;
   border-radius: var(--radius-md);
-  padding: 1rem;
-  margin-bottom: 1.5rem;
+  padding: 1.15rem;
+  margin-bottom: 1.75rem;
 }
 
 .meta-item {
-  font-size: 0.85rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.35rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .meta-item .label {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  font-weight: 600;
+  color: #64748b;
 }
 
-.text-success { color: var(--success); }
-.text-warning { color: var(--warning); }
+.meta-item strong {
+  font-size: 0.95rem;
+  color: #0f172a;
+  word-break: break-word;
+}
 
-/* Chart Container */
+.text-success { color: #16a34a !important; }
+.text-warning { color: #d97706 !important; }
+
+/* Chart Outer Card & Scroll Area */
+.chart-outer-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+}
+
+.chart-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.85rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chart-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.chart-icon {
+  font-size: 1.25rem;
+}
+
+.chart-items-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #4f46e5;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+}
+
+.unit-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.chart-scroll-wrapper {
+  width: 100%;
+  max-height: 560px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.35rem;
+}
+
+/* Custom Scrollbar for Chart */
+.chart-scroll-wrapper::-webkit-scrollbar {
+  width: 7px;
+}
+
+.chart-scroll-wrapper::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.chart-scroll-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 .chart-container {
   position: relative;
   width: 100%;
-  height: 380px;
-  margin-bottom: 1.5rem;
+  min-height: 380px;
+  transition: height 0.2s ease;
 }
 
 #insightChart {
   width: 100% !important;
   height: 100% !important;
+}
+
+/* Result Details & Ranking Table */
+.result-details-section {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.result-details-header {
+  margin-bottom: 1rem;
+}
+
+.result-details-tag {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.ranking-table-wrapper {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.ranking-table th {
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1.5px solid #cbd5e1;
+}
+
+.ranking-table td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+}
+
+.ranking-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.rank-1 { background: #fef08a; color: #854d0e; } /* Gold */
+.rank-2 { background: #e2e8f0; color: #475569; } /* Silver */
+.rank-3 { background: #fed7aa; color: #9a3412; } /* Bronze */
+
+.rank-val {
+  font-weight: 700;
+  color: #2563eb;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Step 4: Mode Tabs */
