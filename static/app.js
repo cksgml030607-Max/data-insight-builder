@@ -72,8 +72,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch("/health");
       const data = await res.json();
       if (res.ok && data.status === "ok") {
-        statusDot.className = "status-dot online";
-        statusText.textContent = `연결됨 (${data.model})`;
+        if (data.api_key_configured) {
+          statusDot.className = "status-dot online";
+          statusText.textContent = `연결됨 (${data.model})`;
+          console.log("[HEALTH] Gemini API 연동 정상 확인:", data.key_preview);
+        } else {
+          statusDot.className = "status-dot offline";
+          statusText.textContent = `⚠️ API 키 미설정 (${data.model})`;
+          console.warn("[HEALTH] 주의: 서버에 GEMINI_API_KEY 또는 GOOGLE_API_KEY 환경변수가 설정되지 않았습니다.");
+        }
       } else {
         throw new Error("서버 비정상 상태");
       }

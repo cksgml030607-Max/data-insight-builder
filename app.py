@@ -177,6 +177,19 @@ def diagnose_dataframe(df, filename, file_size, chosen_encoding, skipped_rows):
         "notice": "데이터셋은 서버 메모리에만 임시 보관되며, 서버 재시작 시 초기화됩니다."
     }
 
+def get_gemini_api_key():
+    """
+    GEMINI_API_KEY 또는 GOOGLE_API_KEY 환경변수를 유연하게 탐색하고,
+    따옴표나 앞뒤 공백을 안전하게 정제하여 반환합니다.
+    """
+    for key_name in ["GEMINI_API_KEY", "GOOGLE_API_KEY", "GEMINI_KEY"]:
+        val = os.getenv(key_name)
+        if val:
+            cleaned = val.strip().strip("'\" ")
+            if cleaned:
+                return cleaned
+    return ""
+
 @app.before_request
 def log_request_info():
     logger.info(f"[REQUEST] {request.method} {request.path}")
@@ -192,13 +205,15 @@ def index():
 
 @app.route("/health", methods=["GET"])
 def health():
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    api_key = get_gemini_api_key()
     has_api_key = bool(api_key)
+    masked = f"{api_key[:6]}...{api_key[-4:]}" if len(api_key) >= 10 else ("설정됨" if has_api_key else "미설정")
     model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     
     return jsonify({
         "status": "ok",
         "api_key_configured": has_api_key,
+        "key_preview": masked,
         "model": model_name
     })
 
@@ -284,10 +299,10 @@ def suggest_analyses():
         logger.warning("[ERROR] 진단된 데이터셋이 없습니다.")
         return jsonify({"error": "분석을 제안할 데이터셋이 없습니다. 먼저 CSV 파일을 업로드해 주세요."}), 400
         
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    api_key = get_gemini_api_key()
     if not api_key:
         logger.warning("[ERROR] GEMINI_API_KEY 미설정")
-        return jsonify({"error": "Gemini API Key가 설정되지 않았습니다. .env 파일에 키를 입력해 주세요."}), 400
+        return jsonify({"error": "Gemini API Key가 설정되지 않았습니다. Vercel 환경변수(Environment Variables) 또는 .env 파일에 키를 입력해 주세요."}), 400
         
     model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip()
     report = CURRENT_DATASET["report"]
@@ -456,10 +471,10 @@ def run_analysis():
 def explain_analysis():
     global CURRENT_DATASET
 
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    api_key = get_gemini_api_key()
     if not api_key:
         logger.warning("[ERROR] GEMINI_API_KEY 미설정")
-        return jsonify({"error": "Gemini API Key가 설정되지 않았습니다. .env 파일에 키를 입력해 주세요."}), 400
+        return jsonify({"error": "Gemini API Key가 설정되지 않았습니다. Vercel 환경변수(Environment Variables) 또는 .env 파일에 키를 입력해 주세요."}), 400
 
     model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip()
     req_data = request.get_json(silent=True) or {}
@@ -597,10 +612,10 @@ def query_natural_language():
     """
     global CURRENT_DATASET
     
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    api_key = get_gemini_api_key()
     if not api_key:
         logger.warning("[ERROR] GEMINI_API_KEY 미설정")
-        return jsonify({"error": "Gemini API Key가 설정되지 않았습니다. .env 파일에 키를 입력해 주세요."}), 400
+        return jsonify({"error": "Gemini API Key가 설정되지 않았습니다. Vercel 환경변수(Environment Variables) 또는 .env 파일에 키를 입력해 주세요."}), 400
 
     if not CURRENT_DATASET or "df" not in CURRENT_DATASET:
         return jsonify({"error": "분석할 데이터셋이 없습니다. 먼저 CSV 파일을 업로드해 주세요."}), 400
@@ -766,10 +781,10 @@ def query_natural_language():
 def chat_followup():
     global CURRENT_DATASET
     
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    api_key = get_gemini_api_key()
     if not api_key:
         logger.warning("[ERROR] GEMINI_API_KEY 미설정")
-        return jsonify({"error": "Gemini API Key가 설정되지 않았습니다. .env 파일에 키를 입력해 주세요."}), 400
+        return jsonify({"error": "Gemini API Key가 설정되지 않았습니다. Vercel 환경변수(Environment Variables) 또는 .env 파일에 키를 입력해 주세요."}), 400
 
     model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip()
     req_data = request.get_json(silent=True) or {}
