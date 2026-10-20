@@ -267,6 +267,10 @@ document.addEventListener("DOMContentLoaded", () => {
       nlAnswerContent.innerHTML = window.marked ? marked.parse(data.answer) : data.answer;
       nlAnswerCard.classList.remove("hidden");
 
+      setTimeout(() => {
+        nlAnswerCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 50);
+
     } catch (err) {
       console.error("[ERROR] 자연어 질의 오류:", err.message);
       alert(`[질문 분석 오류] ${err.message}`);
@@ -275,8 +279,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ==========================================================================
-  // 2-B. 자연어 질의 결과 시각화 버튼 (차트 및 Step 3/4 전환)
   // ==========================================================================
   // 2-B. 자연어 질의 결과 시각화 버튼 (차트 및 Step 3/4 전환)
   // ==========================================================================

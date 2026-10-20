@@ -99,44 +99,70 @@
         <!-- 2-A: 자연어 질문 인터페이스 -->
         <div class="nl-query-container">
           <div class="nl-query-header">
-            <h3>💬 데이터에 대해 궁금한 점을 무엇이든 질문하세요</h3>
-            <p>자연어로 질문하면 Gemini가 데이터를 직접 계산하여 답변하고 맞춤형 차트를 구성합니다.</p>
-          </div>
-
-          <!-- 예시 질문 칩 -->
-          <div class="nl-prompt-chips" id="nlPromptChips">
-            <span class="chip-label">추천 질문:</span>
-            <button class="chip-btn" data-query="2024년 인터넷 사용률 TOP 10 국가는?">💡 2024년 인터넷 사용률 TOP 10 국가는?</button>
-            <button class="chip-btn" data-query="한국(Korea, Rep.)의 사용률 순위와 전체 대비 위치는?">💡 한국의 사용률 순위와 위치는?</button>
-            <button class="chip-btn" data-query="한국과 미국의 연도별 인터넷 사용률 변화 추이는?">💡 한국과 미국의 연도별 변화 추이는?</button>
-            <button class="chip-btn" data-query="전 세계 인터넷 사용률 평균과 분포는 어때?">💡 전 세계 사용률 평균과 분포는?</button>
+            <div class="nl-header-tag">✨ 스마트 데이터 질의</div>
+            <h3>데이터에 대해 무엇이든 자연어로 질문해보세요</h3>
+            <p>공식 통계 데이터(Pandas)를 직접 계산하여 사실만을 답변하고, 맞춤형 인터랙티브 차트를 즉시 구성합니다.</p>
           </div>
 
           <!-- 질문 입력 바 -->
           <div class="nl-input-bar">
-            <input type="text" id="nlQueryInput" placeholder="예: 한국의 순위는 몇 위야? 또는 2024년 1위 국가는 어디야?" autocomplete="off">
+            <div class="nl-input-icon">🔍</div>
+            <input type="text" id="nlQueryInput" placeholder="예: 한국의 인터넷 사용률 순위는 몇 위야? 또는 2024년 1위 국가는 어디야?" autocomplete="off">
             <button id="btnSubmitQuery" class="btn btn-primary btn-search">
               <span>질문하기</span>
             </button>
           </div>
 
+          <!-- 예시 추천 질문 칩 -->
+          <div class="nl-prompt-chips" id="nlPromptChips">
+            <span class="chip-label">추천 질문:</span>
+            <button class="chip-btn" data-query="2024년 인터넷 사용률 TOP 10 국가는?">🏆 2024년 TOP 10 국가는?</button>
+            <button class="chip-btn" data-query="한국(Korea, Rep.)의 사용률 순위와 전체 대비 위치는?">🇰🇷 한국 순위와 위치는?</button>
+            <button class="chip-btn" data-query="한국과 미국의 연도별 인터넷 사용률 변화 추이는?">📈 한국 vs 미국 시계열 추이</button>
+            <button class="chip-btn" data-query="전 세계 인터넷 사용률 평균과 분포는 어때?">🌐 전 세계 평균과 분포는?</button>
+          </div>
+
           <!-- 자연어 질의 로딩 -->
           <div id="nlQueryLoading" class="loading-spinner hidden">
             <div class="spinner"></div>
-            <p>질문을 분석하고 Pandas로 정확한 데이터를 계산하고 있습니다...</p>
+            <p>질문을 분석하고 <strong>Pandas</strong>로 데이터를 계산하는 중입니다...</p>
           </div>
 
-          <!-- 자연어 질의 답변 카드 -->
+          <!-- 자연어 질의 답변 카드 (사용자 질문 + AI 답변 + 시각화 유도 CTA 분리) -->
           <div id="nlAnswerCard" class="nl-answer-card hidden">
-            <div class="nl-answer-header">
-              <div class="nl-q-badge">질문: <strong id="nlAnswerQueryText"></strong></div>
-              <span class="nl-tool-tag" id="nlAnswerToolTag"></span>
+            <!-- 1. 사용자 질문 표시 영역 -->
+            <div class="nl-user-query-box">
+              <span class="q-icon">Q</span>
+              <div class="q-body">
+                <span class="q-label">나의 질문</span>
+                <p class="q-text" id="nlAnswerQueryText">-</p>
+              </div>
             </div>
-            <div class="nl-answer-content markdown-body" id="nlAnswerContent"></div>
-            
-            <div class="nl-answer-actions">
-              <button id="btnVisualizeQuery" class="btn btn-accent btn-visualize">
-                📊 이 분석 시각화 그래프 보기 &rarr;
+
+            <!-- 2. AI 분석 답변 영역 -->
+            <div class="nl-ai-response-box">
+              <div class="nl-ai-header">
+                <div class="nl-ai-title">
+                  <span class="ai-avatar">🤖</span>
+                  <strong>AI 데이터 분석 결과</strong>
+                </div>
+                <div class="nl-ai-badges">
+                  <span class="nl-tool-tag" id="nlAnswerToolTag">-</span>
+                </div>
+              </div>
+              <div class="nl-answer-content markdown-body" id="nlAnswerContent"></div>
+            </div>
+
+            <!-- 3. 시각화 유도 배너 (CTA) -->
+            <div class="nl-cta-banner">
+              <div class="cta-info">
+                <span class="cta-badge">시각화 준비 완료</span>
+                <p class="cta-title">이 답변에 대한 그래프와 수치를 확인하시겠습니까?</p>
+                <p class="cta-desc">클릭 시 분석 결과 차트가 그려지며, 사실 기반 정밀 보고서와 Q&A 대화로 이어집니다.</p>
+              </div>
+              <button id="btnVisualizeQuery" class="btn btn-visualize">
+                <span>📊 시각화 그래프 보기</span>
+                <span class="arrow">&rarr;</span>
               </button>
             </div>
           </div>
